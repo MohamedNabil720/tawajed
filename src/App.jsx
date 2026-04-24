@@ -1,200 +1,554 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-const tripTypes = {
-  oneWay: "ذهاب",
-  roundTrip: "ذهاب وعودة",
+const LOGO_BASE64 = "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";
+
+const countries = [
+  "القاهرة", "جدة", "دبي", "الرياض", "المدينة", "الدمام", "أبوظبي", "الشارقة", "الدوحة",
+  "الكويت", "مسقط", "الإسكندرية", "شرم الشيخ", "الغردقة", "إسطنبول", "لندن", "باريس",
+  "فرانكفورت", "ميونخ", "روما", "ميلانو", "مدريد", "برشلونة", "أثينا", "أمستردام",
+  "فيينا", "زيورخ", "كوبنهاغن", "موسكو", "بوخارست", "كييف", "نيويورك", "شيكاغو",
+  "لوس أنجلوس", "تورونتو", "بكين", "بانكوك", "كوالالمبور", "مومباي", "دلهي",
+  "نيروبي", "أديس أبابا", "تونس", "الدار البيضاء", "طرابلس", "الخرطوم"
+];
+
+const airports = [
+  "مطار القاهرة الدولي", "مطار برج العرب", "مطار شرم الشيخ الدولي", "مطار الغردقة الدولي",
+  "مطار الأقصر الدولي", "مطار أسوان الدولي", "مطار سفنكس الدولي", "مطار مرسى علم",
+  "مطار سوهاج الدولي", "مطار أسيوط الدولي", "مطار العلمين الدولي", "مطار العاصمة الإدارية",
+  "مطار الملك عبدالعزيز الدولي", "مطار الملك خالد الدولي", "مطار الأمير محمد بن عبدالعزيز",
+  "مطار الملك فهد الدولي", "مطار دبي الدولي", "مطار أبوظبي الدولي", "مطار الشارقة الدولي",
+  "مطار حمد الدولي", "مطار الكويت الدولي", "مطار مسقط الدولي", "مطار هيثرو", "مطار شارل ديغول",
+  "مطار فرانكفورت", "مطار ميونخ", "مطار روما فيوميتشينو", "مطار ميلانو مالبينسا",
+  "مطار مدريد باراخاس", "مطار برشلونة", "مطار أثينا الدولي", "مطار إسطنبول",
+  "مطار صبيحة كوكجن", "مطار زيورخ", "مطار فيينا الدولي", "مطار أمستردام", "مطار كوبنهاغن",
+  "مطار أديس أبابا بولي", "مطار نيروبي", "مطار الخرطوم", "مطار تونس قرطاج",
+  "مطار الدار البيضاء", "مطار طرابلس معيتيقة", "مطار جون كينيدي", "مطار شيكاغو أوهير",
+  "مطار لوس أنجلوس", "مطار تورونتو بيرسون", "مطار بكين الدولي", "مطار كوالالمبور",
+  "مطار بانكوك", "مطار مومباي", "مطار دلهي", "مطار سيدني", "مطار ملبورن",
+  "مطار موسكو شيريميتييفو", "مطار كييف", "مطار بوخارست", "مطار برلين", "مطار جنيف",
+  "مطار بروكسل", "مطار نابولي", "مطار براغ", "مطار يريفان", "مطار بازل"
+];
+
+const tripTypes = [
+  { value: "one_way", label: "ذهاب فقط" },
+  { value: "round_trip", label: "ذهاب وعودة" },
+  { value: "one_way_transit", label: "ذهاب ترانزيت" },
+  { value: "transit_direct_return", label: "ذهاب ترانزيت وعودة مباشر" },
+  { value: "direct_transit_return", label: "ذهاب مباشر وعودة ترانزيت" },
+  { value: "both_transit", label: "ذهاب وعودة ترانزيت" },
+  { value: "multi", label: "متعددة الرحلات" },
+];
+
+const hasTransitOut = (t) => ["one_way_transit", "transit_direct_return", "both_transit"].includes(t);
+const hasTransitReturn = (t) => ["direct_transit_return", "both_transit"].includes(t);
+const hasReturn = (t) => ["round_trip", "transit_direct_return", "direct_transit_return", "both_transit"].includes(t);
+
+const SelectField = ({ label, value, onChange, options, placeholder }) => (
+  <div style={styles.field}>
+    <label style={styles.label}>{label}</label>
+    <select value={value} onChange={e => onChange(e.target.value)} style={styles.select}>
+      <option value="">{placeholder || "-- اختر --"}</option>
+      {options.map((o, i) => (
+        <option key={i} value={typeof o === "object" ? o.value : o}>
+          {typeof o === "object" ? o.label : o}
+        </option>
+      ))}
+      <option value="__other__">أخرى (اكتب يدوياً)</option>
+    </select>
+  </div>
+);
+
+const CountrySelect = ({ label, value, onChange }) => {
+  const [isOther, setIsOther] = useState(false);
+  const [customVal, setCustomVal] = useState("");
+
+  const handleSelect = (v) => {
+    if (v === "__other__") { setIsOther(true); onChange(""); }
+    else { setIsOther(false); onChange(v); }
+  };
+  const handleCustom = (v) => { setCustomVal(v); onChange(v); };
+
+  return (
+    <div style={styles.field}>
+      <label style={styles.label}>{label}</label>
+      <select value={isOther ? "__other__" : value} onChange={e => handleSelect(e.target.value)} style={styles.select}>
+        <option value="">-- اختر --</option>
+        {countries.map((c, i) => <option key={i} value={c}>{c}</option>)}
+        <option value="__other__">أخرى (اكتب يدوياً)</option>
+      </select>
+      {isOther && (
+        <input
+          type="text"
+          value={customVal}
+          onChange={e => handleCustom(e.target.value)}
+          placeholder="اكتب اسم البلد"
+          style={{ ...styles.input, marginTop: 6 }}
+        />
+      )}
+    </div>
+  );
 };
 
-const fixedLogo = "/logo.jfif";
+const AirportSelect = ({ label, value, onChange }) => {
+  const [isOther, setIsOther] = useState(false);
+  const [customVal, setCustomVal] = useState("");
 
-const createSegment = (defaults = {}) => ({
-  attendanceAirport: "",
-  attendanceTerminal: "",
-  attendanceDate: "",
-  attendanceTime: "",
-  attendancePeriod: "",
-  departureTime: "",
-  departurePeriod: "",
-  arrivalTime: "",
-  arrivalPeriod: "",
-  flightNumber: "",
-  airline: "",
-  baggage: "",
-  ...defaults,
+  const handleSelect = (v) => {
+    if (v === "__other__") { setIsOther(true); onChange(""); }
+    else { setIsOther(false); onChange(v); }
+  };
+  const handleCustom = (v) => { setCustomVal(v); onChange(v); };
+
+  return (
+    <div style={styles.field}>
+      <label style={styles.label}>{label}</label>
+      <select value={isOther ? "__other__" : value} onChange={e => handleSelect(e.target.value)} style={styles.select}>
+        <option value="">-- اختر المطار --</option>
+        {airports.map((a, i) => <option key={i} value={a}>{a}</option>)}
+        <option value="__other__">أخرى (اكتب يدوياً)</option>
+      </select>
+      {isOther && (
+        <input
+          type="text"
+          value={customVal}
+          onChange={e => handleCustom(e.target.value)}
+          placeholder="اكتب اسم المطار"
+          style={{ ...styles.input, marginTop: 6 }}
+        />
+      )}
+    </div>
+  );
+};
+
+const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
+  <div style={styles.field}>
+    <label style={styles.label}>{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      style={styles.input}
+    />
+  </div>
+);
+
+const emptyLeg = () => ({
+  fromCountry: "", toCountry: "",
+  airport: "", hall: "",
+  date: "", departTime: "", arrivalTime: "",
+  transit: { place: "", arrivalTime: "", departTime: "", duration: "" }
 });
 
-const fieldGroups = [
-  { key: "attendanceAirport", label: "مطار التواجد", placeholder: "مطار القاهرة" },
-  { key: "attendanceTerminal", label: "الصالة", placeholder: "صالة 2" },
-  { key: "attendanceDate", label: "تاريخ التواجد", placeholder: "20/03/2026" },
-  { key: "attendanceTime", label: "وقت التواجد", placeholder: "11:30" },
-  { key: "attendancePeriod", label: "فترة التواجد", placeholder: "صباحا" },
-  { key: "departureTime", label: "وقت الإقلاع", placeholder: "2:15" },
-  { key: "departurePeriod", label: "فترة الإقلاع", placeholder: "ظهرا" },
-  { key: "arrivalTime", label: "وقت الوصول", placeholder: "5:20" },
-  { key: "arrivalPeriod", label: "فترة الوصول", placeholder: "مساءا" },
-  { key: "flightNumber", label: "رقم الرحلة", placeholder: "306" },
-  { key: "airline", label: "شركة الطيران", placeholder: "الخطوط السعودية" },
-  { key: "baggage", label: "الوزن", placeholder: "هاند باج 7 + 23" },
-];
-
-const tableRows = [
-  ["التواجد", "attendanceAirport", "attendanceTerminal", "attendanceDate", "attendanceTime", "attendancePeriod"],
-  ["الإقلاع", "", "", "", "departureTime", "departurePeriod"],
-  ["الوصول", "", "", "", "arrivalTime", "arrivalPeriod"],
-  ["رقم الرحلة", "airline", "flightNumber", "", "", ""],
-  ["الوزن", "baggage", "", "", "", ""],
-];
-
-function SegmentForm({ title, values, onChange }) {
-  return (
-    <section className="segment-card">
-      <div className="segment-header">
-        <h3>{title}</h3>
-        
-      </div>
-
-      <div className="form-grid">
-        {fieldGroups.map((field) => (
-          <label className="field" key={field.key}>
-            <span>{field.label}</span>
-            <input
-              type="text"
-              value={values[field.key]}
-              onChange={(event) => onChange(field.key, event.target.value)}
-              placeholder={field.placeholder}
-            />
-          </label>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function renderValue(values, key) {
-  return key ? values[key] || "ـــ" : "ـــ";
-}
-
-function SegmentTable({ title, values }) {
-  return (
-    <section className="print-section">
-      <div className="print-title">{title}</div>
-      <table className="flight-table">
-        <tbody>
-          {tableRows.map(([label, col1, col2, col3, col4, col5]) => (
-            <tr key={label}>
-              <th>{label}</th>
-              <td>{renderValue(values, col1)}</td>
-              <td>{renderValue(values, col2)}</td>
-              <td>{renderValue(values, col3)}</td>
-              <td>{renderValue(values, col4)}</td>
-              <td>{renderValue(values, col5)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
+const emptyReturn = () => ({
+  fromCountry: "", toCountry: "",
+  airport: "", hall: "",
+  date: "", departTime: "", arrivalTime: "",
+  transit: { place: "", arrivalTime: "", departTime: "", duration: "" }
+});
 
 export default function App() {
-  const [tripType, setTripType] = useState("oneWay");
+  const [tripType, setTripType] = useState("");
   const [clientName, setClientName] = useState("");
-  const [departure, setDeparture] = useState(
-    createSegment({
-      attendanceAirport: "مطار القاهرة",
-      attendanceTerminal: "صالة 2",
-      airline: "الخطوط السعودية",
-    }),
-  );
-  const [returnTrip, setReturnTrip] = useState(
-    createSegment({
-      attendanceAirport: "مطار جدة",
-      attendanceTerminal: "صالة 1",
-      airline: "الخطوط السعودية",
-    }),
-  );
+  const [weight, setWeight] = useState("");
+  const [legs, setLegs] = useState([emptyLeg()]);
+  const [returnData, setReturnData] = useState(emptyReturn());
+  const printRef = useRef();
 
-  const handleSegmentChange = (setter) => (key, value) => {
-    setter((current) => ({
-      ...current,
-      [key]: value,
-    }));
+  const isMulti = tripType === "multi";
+  const showReturn = hasReturn(tripType);
+  const showOutTransit = hasTransitOut(tripType);
+  const showReturnTransit = hasTransitReturn(tripType);
+
+  const updateLeg = (idx, field, val) => {
+    setLegs(prev => prev.map((l, i) => i === idx ? { ...l, [field]: val } : l));
+  };
+  const updateLegTransit = (idx, field, val) => {
+    setLegs(prev => prev.map((l, i) => i === idx ? { ...l, transit: { ...l.transit, [field]: val } } : l));
+  };
+  const updateReturn = (field, val) => setReturnData(prev => ({ ...prev, [field]: val }));
+  const updateReturnTransit = (field, val) => setReturnData(prev => ({ ...prev, transit: { ...prev.transit, [field]: val } }));
+
+  const getTripTypeLabel = (v) => tripTypes.find(t => t.value === v)?.label || v;
+
+  const handlePrint = () => {
+    const printContent = document.getElementById("printArea");
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html dir="rtl">
+      <head>
+        <meta charset="utf-8"/>
+        <title>تذكرة رحلة - Royal Valley Tours</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Cairo', sans-serif; background: #f5f7fa; color: #1a2744; direction: rtl; }
+          .page { max-width: 800px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+          .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 28px 36px; display: flex; align-items: center; gap: 20px; }
+          .logo-frame { width: 90px; height: 90px; background: white; border-radius: 12px; padding: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          .header img { width: 100%; height: 100%; object-fit: contain; }
+          .header-text h1 { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; }
+          .header-text p { color: #c8d8f8; font-size: 14px; margin-top: 4px; }
+          .ticket-bar { background: #c0392b; padding: 10px 36px; display: flex; justify-content: space-between; align-items: center; }
+          .ticket-bar span { color: white; font-size: 15px; font-weight: 700; }
+          .content { padding: 28px 36px; }
+          .section { margin-bottom: 24px; border: 1.5px solid #e2e8f4; border-radius: 12px; overflow: hidden; }
+          .section-title { background: #f0f4ff; padding: 10px 18px; font-size: 15px; font-weight: 700; color: #1a2744; border-bottom: 1.5px solid #e2e8f4; display: flex; align-items: center; gap: 8px; }
+          .section-title .icon { color: #c0392b; font-size: 18px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+          .cell { padding: 12px 18px; border-bottom: 1px solid #eef1f8; }
+          .cell:nth-child(3n+1), .cell:nth-child(3n+2) { border-left: 1px solid #eef1f8; }
+          .cell-label { font-size: 11px; color: #7a8ab0; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .cell-value { font-size: 14px; color: #1a2744; font-weight: 600; }
+          .transit-box { margin: 0 18px 14px; padding: 14px; background: #fff8f0; border: 1.5px dashed #f0a500; border-radius: 10px; }
+          .transit-title { font-size: 13px; font-weight: 700; color: #c07000; margin-bottom: 10px; }
+          .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .transit-cell { }
+          .footer { background: #1a2744; padding: 14px 36px; text-align: center; color: #8ba3d8; font-size: 12px; }
+          .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
+          .watermark { text-align: center; padding: 10px; color: #d0d8ee; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        ${printContent.innerHTML}
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 600);
   };
 
+  const mainLeg = legs[0];
+
   return (
-    <div className="app-shell">
-      <main className="layout">
-        <section className="panel form-panel no-print">
-          <div className="panel-head">
-           
-            <h1> تواجد   </h1>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.logoFrame}>
+          <img src="/logo-fixed.png" alt="Royal Valley Tours" style={styles.logo} />
+        </div>
+        <div>
+          <div style={styles.companyName}>ROYAL VALLEY TOURS</div>
+          <div style={styles.tagline}>PICK YOUR PASSION..</div>
+        </div>
+      </div>
+
+      <div style={styles.formWrapper}>
+        {/* Trip type */}
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionTitle}>
+            <span style={styles.dot} />
+            نوع الرحلة
           </div>
-
-          <section className="segment-card">
-           
-
-            <div className="form-grid">
-              <label className="field">
-                <span>نوع الرحلة</span>
-                <select value={tripType} onChange={(event) => setTripType(event.target.value)}>
-                  <option value="oneWay">{tripTypes.oneWay}</option>
-                  <option value="roundTrip">{tripTypes.roundTrip}</option>
-                </select>
-              </label>
-
-              <label className="field">
-                <span>اسم العميل</span>
-                <input
-                  type="text"
-                  value={clientName}
-                  onChange={(event) => setClientName(event.target.value)}
-                  placeholder="اكتب اسم العميل"
-                />
-              </label>
+          <div style={styles.grid2}>
+            <div style={styles.field}>
+              <label style={styles.label}>نوع الرحلة</label>
+              <select value={tripType} onChange={e => setTripType(e.target.value)} style={styles.select}>
+                <option value="">-- اختر نوع الرحلة --</option>
+                {tripTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
             </div>
-          </section>
-
-          <SegmentForm
-            title="بيانات الذهاب"
-            values={departure}
-            onChange={handleSegmentChange(setDeparture)}
-          />
-
-          {tripType === "roundTrip" ? (
-            <SegmentForm
-              title="بيانات العودة"
-              values={returnTrip}
-              onChange={handleSegmentChange(setReturnTrip)}
-            />
-          ) : null}
-
-          <div className="actions">
-            <button type="button" className="primary-btn" onClick={() => window.print()}>
-              طباعة
-            </button>
+            <InputField label="اسم العميل" value={clientName} onChange={setClientName} placeholder="الاسم الكامل" />
           </div>
-        </section>
+          <div style={styles.grid2}>
+            <InputField label="الوزن (كجم)" value={weight} onChange={setWeight} type="number" placeholder="مثال: 23" />
+          </div>
+        </div>
 
-        <section className="panel preview-panel">
-          <div className="ticket-sheet">
-            <div className="print-header">
-              <img src={fixedLogo} alt="Royal Valley Tours" className="print-logo" />
-              <div className="print-meta">
-                <p><strong>اسم العميل:</strong> {clientName || "................................"}</p>
-                <p><strong>نوع الرحلة:</strong> {tripTypes[tripType]}</p>
-                <p>مع أطيب التمنيات بقضاء رحلة سعيدة</p>
+        {/* Outbound legs */}
+        {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
+          <div key={idx} style={styles.sectionCard}>
+            <div style={styles.sectionTitle}>
+              <span style={styles.dot} />
+              {isMulti ? `رحلة ${idx + 1}` : "بيانات الذهاب"}
+            </div>
+            <div style={styles.grid2}>
+              <CountrySelect label="من (البلد)" value={leg.fromCountry} onChange={v => updateLeg(idx, "fromCountry", v)} />
+              <CountrySelect label="إلى (البلد)" value={leg.toCountry} onChange={v => updateLeg(idx, "toCountry", v)} />
+            </div>
+            <div style={styles.grid2}>
+              <AirportSelect label="التواجد بمطار" value={leg.airport} onChange={v => updateLeg(idx, "airport", v)} />
+              <InputField label="الصالة" value={leg.hall} onChange={v => updateLeg(idx, "hall", v)} placeholder="مثال: صالة 2" />
+            </div>
+            <div style={styles.grid3}>
+              <InputField label="اليوم / التاريخ" value={leg.date} onChange={v => updateLeg(idx, "date", v)} type="date" />
+              <InputField label="ساعة الإقلاع" value={leg.departTime} onChange={v => updateLeg(idx, "departTime", v)} type="time" />
+              <InputField label="وصول الطائرة الساعة" value={leg.arrivalTime} onChange={v => updateLeg(idx, "arrivalTime", v)} type="time" />
+            </div>
+
+            {/* Transit for outbound */}
+            {(showOutTransit || isMulti) && (
+              <div style={styles.transitBox}>
+                <div style={styles.transitTitle}>✈ بيانات الترانزيت</div>
+                <div style={styles.grid2}>
+                  <InputField label="مكان الترانزيت" value={leg.transit.place} onChange={v => updateLegTransit(idx, "place", v)} placeholder="مثال: دبي" />
+                  <InputField label="مدة الترانزيت" value={leg.transit.duration} onChange={v => updateLegTransit(idx, "duration", v)} placeholder="مثال: 2 ساعة" />
+                </div>
+                <div style={styles.grid2}>
+                  <InputField label="وصول الترانزيت الساعة" value={leg.transit.arrivalTime} onChange={v => updateLegTransit(idx, "arrivalTime", v)} type="time" />
+                  <InputField label="إقلاع من الترانزيت الساعة" value={leg.transit.departTime} onChange={v => updateLegTransit(idx, "departTime", v)} type="time" />
+                </div>
               </div>
+            )}
+
+            {isMulti && (
+              <div style={{ display: "flex", gap: 10, padding: "0 0 8px 0" }}>
+                {idx === legs.length - 1 && (
+                  <button onClick={() => setLegs(prev => [...prev, emptyLeg()])} style={styles.addBtn}>+ إضافة رحلة</button>
+                )}
+                {legs.length > 1 && (
+                  <button onClick={() => setLegs(prev => prev.filter((_, i) => i !== idx))} style={styles.removeBtn}>حذف</button>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Return */}
+        {showReturn && (
+          <div style={styles.sectionCard}>
+            <div style={styles.sectionTitle}>
+              <span style={{ ...styles.dot, background: "#c0392b" }} />
+              بيانات العودة
+            </div>
+            <div style={styles.grid2}>
+              <CountrySelect label="من (البلد)" value={returnData.fromCountry} onChange={v => updateReturn("fromCountry", v)} />
+              <CountrySelect label="إلى (البلد)" value={returnData.toCountry} onChange={v => updateReturn("toCountry", v)} />
+            </div>
+            <div style={styles.grid2}>
+              <AirportSelect label="التواجد بمطار" value={returnData.airport} onChange={v => updateReturn("airport", v)} />
+              <InputField label="الصالة" value={returnData.hall} onChange={v => updateReturn("hall", v)} placeholder="مثال: صالة 1" />
+            </div>
+            <div style={styles.grid3}>
+              <InputField label="اليوم / التاريخ" value={returnData.date} onChange={v => updateReturn("date", v)} type="date" />
+              <InputField label="ساعة الإقلاع" value={returnData.departTime} onChange={v => updateReturn("departTime", v)} type="time" />
+              <InputField label="وصول الطائرة الساعة" value={returnData.arrivalTime} onChange={v => updateReturn("arrivalTime", v)} type="time" />
             </div>
 
-            <SegmentTable title="الذهـــــــــــاب" values={departure} />
-
-            {tripType === "roundTrip" ? (
-              <SegmentTable title="العــــــــــودة" values={returnTrip} />
-            ) : null}
+            {showReturnTransit && (
+              <div style={styles.transitBox}>
+                <div style={styles.transitTitle}>✈ بيانات ترانزيت العودة</div>
+                <div style={styles.grid2}>
+                  <InputField label="مكان الترانزيت" value={returnData.transit.place} onChange={v => updateReturnTransit("place", v)} placeholder="مثال: القاهرة" />
+                  <InputField label="مدة الترانزيت" value={returnData.transit.duration} onChange={v => updateReturnTransit("duration", v)} placeholder="مثال: 3 ساعات" />
+                </div>
+                <div style={styles.grid2}>
+                  <InputField label="وصول الترانزيت الساعة" value={returnData.transit.arrivalTime} onChange={v => updateReturnTransit("arrivalTime", v)} type="time" />
+                  <InputField label="إقلاع من الترانزيت الساعة" value={returnData.transit.departTime} onChange={v => updateReturnTransit("departTime", v)} type="time" />
+                </div>
+              </div>
+            )}
           </div>
-        </section>
-      </main>
+        )}
+
+        {/* Print Button */}
+        <button onClick={handlePrint} style={styles.printBtn}>
+          🖨 طباعة البيانات كـ PDF
+        </button>
+      </div>
+
+      {/* Hidden Print Area */}
+      <div id="printArea" style={{ display: "none" }}>
+        <div className="page">
+          <div className="header">
+            <div className="logo-frame">
+              <img src="/logo-fixed.png" alt="logo" />
+            </div>
+            <div className="header-text">
+              <h1>ROYAL VALLEY TOURS</h1>
+              <p>PICK YOUR PASSION.. | بيانات الرحلة</p>
+            </div>
+          </div>
+          <div className="divider" />
+          <div className="ticket-bar">
+            <span>🧳 {getTripTypeLabel(tripType)}</span>
+            <span>👤 {clientName}</span>
+            <span>⚖ الوزن: {weight} كجم</span>
+          </div>
+          <div className="content">
+            {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
+              <div key={idx} className="section" style={{ marginBottom: 20 }}>
+                <div className="section-title">
+                  <span className="icon">✈</span>
+                  {isMulti ? `رحلة ${idx + 1}` : "بيانات الذهاب"}
+                </div>
+                <div className="grid">
+                  <div className="cell"><div className="cell-label">من</div><div className="cell-value">{leg.fromCountry || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">إلى</div><div className="cell-value">{leg.toCountry || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">المطار</div><div className="cell-value">{leg.airport || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">الصالة</div><div className="cell-value">{leg.hall || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{leg.date || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{leg.departTime || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{leg.arrivalTime || "—"}</div></div>
+                </div>
+                {(showOutTransit || isMulti) && leg.transit.place && (
+                  <div className="transit-box">
+                    <div className="transit-title">🔄 بيانات الترانزيت</div>
+                    <div className="transit-grid">
+                      <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{leg.transit.place}</div></div>
+                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{leg.transit.duration}</div></div>
+                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{leg.transit.arrivalTime}</div></div>
+                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{leg.transit.departTime}</div></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {showReturn && (
+              <div className="section">
+                <div className="section-title">
+                  <span className="icon">↩</span>
+                  بيانات العودة
+                </div>
+                <div className="grid">
+                  <div className="cell"><div className="cell-label">من</div><div className="cell-value">{returnData.fromCountry || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">إلى</div><div className="cell-value">{returnData.toCountry || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">المطار</div><div className="cell-value">{returnData.airport || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">الصالة</div><div className="cell-value">{returnData.hall || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{returnData.date || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{returnData.departTime || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{returnData.arrivalTime || "—"}</div></div>
+                </div>
+                {showReturnTransit && returnData.transit.place && (
+                  <div className="transit-box">
+                    <div className="transit-title">🔄 بيانات ترانزيت العودة</div>
+                    <div className="transit-grid">
+                      <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{returnData.transit.place}</div></div>
+                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{returnData.transit.duration}</div></div>
+                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{returnData.transit.arrivalTime}</div></div>
+                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{returnData.transit.departTime}</div></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="watermark">تم الإنشاء بواسطة Royal Valley Tours — PICK YOUR PASSION..</div>
+          <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>
+        </div>
+      </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    fontFamily: "'Cairo', 'Segoe UI', sans-serif",
+    direction: "rtl",
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #f0f4ff 0%, #e8edf8 100%)",
+    paddingBottom: 60,
+  },
+  header: {
+    background: "linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%)",
+    padding: "22px 32px",
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+    boxShadow: "0 4px 20px rgba(26,39,68,0.3)",
+  },
+  logoFrame: {
+    width: 88,
+    height: 88,
+    background: "white",
+    borderRadius: 12,
+    padding: 6,
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+  },
+  logo: {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  },
+  companyName: {
+    color: "white", fontSize: 26, fontWeight: 900,
+    letterSpacing: 2, lineHeight: 1.2,
+  },
+  tagline: {
+    color: "#a0b4d8", fontSize: 13, marginTop: 3, letterSpacing: 1,
+  },
+  formWrapper: {
+    maxWidth: 860, margin: "28px auto", padding: "0 16px",
+  },
+  sectionCard: {
+    background: "white",
+    borderRadius: 14,
+    boxShadow: "0 2px 16px rgba(26,39,68,0.09)",
+    padding: "22px 24px",
+    marginBottom: 18,
+    border: "1px solid #e2e8f4",
+  },
+  sectionTitle: {
+    display: "flex", alignItems: "center", gap: 10,
+    fontSize: 16, fontWeight: 700, color: "#1a2744",
+    marginBottom: 18, paddingBottom: 12,
+    borderBottom: "2px solid #f0f4ff",
+  },
+  dot: {
+    width: 10, height: 10, borderRadius: "50%",
+    background: "#2d4a8e", flexShrink: 0,
+  },
+  grid2: {
+    display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16,
+  },
+  grid3: {
+    display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16,
+  },
+  field: { display: "flex", flexDirection: "column" },
+  label: {
+    fontSize: 12, fontWeight: 700, color: "#5a6a8a",
+    marginBottom: 6, letterSpacing: 0.3,
+  },
+  select: {
+    border: "1.5px solid #d0d8ee",
+    borderRadius: 8, padding: "9px 12px",
+    fontSize: 14, color: "#1a2744",
+    background: "#fafbff", outline: "none",
+    cursor: "pointer", fontFamily: "inherit",
+    transition: "border-color 0.2s",
+  },
+  input: {
+    border: "1.5px solid #d0d8ee",
+    borderRadius: 8, padding: "9px 12px",
+    fontSize: 14, color: "#1a2744",
+    background: "#fafbff", outline: "none",
+    fontFamily: "inherit",
+    transition: "border-color 0.2s",
+  },
+  transitBox: {
+    background: "#fff8f0",
+    border: "1.5px dashed #f0a500",
+    borderRadius: 10, padding: 16,
+    marginBottom: 12,
+  },
+  transitTitle: {
+    fontSize: 14, fontWeight: 700, color: "#c07000", marginBottom: 12,
+  },
+  addBtn: {
+    background: "#2d4a8e", color: "white", border: "none",
+    borderRadius: 8, padding: "8px 18px", cursor: "pointer",
+    fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+  },
+  removeBtn: {
+    background: "#c0392b", color: "white", border: "none",
+    borderRadius: 8, padding: "8px 18px", cursor: "pointer",
+    fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+  },
+  printBtn: {
+    width: "100%", padding: "16px",
+    background: "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)",
+    color: "white", border: "none", borderRadius: 12,
+    fontSize: 18, fontWeight: 900, cursor: "pointer",
+    fontFamily: "inherit", letterSpacing: 1,
+    boxShadow: "0 4px 20px rgba(192,57,43,0.4)",
+    marginTop: 8,
+    transition: "transform 0.1s",
+  },
+};
