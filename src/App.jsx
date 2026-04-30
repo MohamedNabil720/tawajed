@@ -133,17 +133,71 @@ const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
   </div>
 );
 
+const getArabicPeriod = (time) => {
+  if (!time) {
+    return "";
+  }
+
+  const [hourText] = time.split(":");
+  const hour = Number(hourText);
+
+  if (Number.isNaN(hour)) {
+    return "";
+  }
+
+  if (hour < 5) return "فجرا";
+  if (hour < 12) return "صباحا";
+  if (hour < 15) return "ظهرا";
+  if (hour < 18) return "عصرا";
+  return "مساءا";
+};
+
+const formatArabicTime = (time) => {
+  if (!time) {
+    return "—";
+  }
+
+  return `${time} ${getArabicPeriod(time)}`.trim();
+};
+
+const buildRouteText = (from, to) => {
+  if (from && to) return `من ${from} إلى ${to}`;
+  if (from) return `من ${from}`;
+  if (to) return `إلى ${to}`;
+  return "—";
+};
+
+const buildAttendanceText = (airport, hall) => {
+  if (!airport && !hall) return "—";
+  if (airport && hall) return `بمطار ${airport} - ${hall}`;
+  if (airport) return `بمطار ${airport}`;
+  return hall;
+};
+
+const TimeField = ({ label, value, onChange }) => (
+  <div style={styles.field}>
+    <label style={styles.label}>{label}</label>
+    <input
+      type="time"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={styles.input}
+    />
+    {value ? <span style={styles.timeHint}>سيظهر في الطباعة: {formatArabicTime(value)}</span> : null}
+  </div>
+);
+
 const emptyLeg = () => ({
   fromCountry: "", toCountry: "",
   airport: "", hall: "",
-  date: "", departTime: "", arrivalTime: "",
+  date: "", departTime: "", arrivalTime: "", flightNumber: "",
   transit: { place: "", arrivalTime: "", departTime: "", duration: "" }
 });
 
 const emptyReturn = () => ({
   fromCountry: "", toCountry: "",
   airport: "", hall: "",
-  date: "", departTime: "", arrivalTime: "",
+  date: "", departTime: "", arrivalTime: "", flightNumber: "",
   transit: { place: "", arrivalTime: "", departTime: "", duration: "" }
 });
 
@@ -193,7 +247,9 @@ export default function App() {
           .ticket-bar span { color: white; font-size: 15px; font-weight: 700; }
           .content { padding: 28px 36px; }
           .section { margin-bottom: 24px; border: 1.5px solid #e2e8f4; border-radius: 12px; overflow: hidden; }
-          .section-title { background: #f0f4ff; padding: 10px 18px; font-size: 15px; font-weight: 700; color: #1a2744; border-bottom: 1.5px solid #e2e8f4; display: flex; align-items: center; gap: 8px; }
+          .section-title { background: #f0f4ff; padding: 10px 18px; font-size: 15px; font-weight: 700; color: #1a2744; border-bottom: 1.5px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+          .section-title-main { display: flex; align-items: center; gap: 8px; }
+          .route-chip { font-size: 12px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 6px 12px; border-radius: 999px; }
           .section-title .icon { color: #c0392b; font-size: 18px; }
           .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
           .cell { padding: 12px 18px; border-bottom: 1px solid #eef1f8; }
@@ -207,6 +263,14 @@ export default function App() {
           .footer { background: #1a2744; padding: 14px 36px; text-align: center; color: #8ba3d8; font-size: 12px; }
           .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
           .watermark { text-align: center; padding: 10px; color: #d0d8ee; font-size: 11px; }
+          .contact-card { margin: 22px 0 8px; border: 1.5px solid #d8dde8; background: #fff; }
+          .contact-grid { display: grid; grid-template-columns: 1fr 1fr; }
+          .contact-block { padding: 14px 18px; min-height: 92px; }
+          .contact-block + .contact-block { border-right: 1.5px solid #d8dde8; }
+          .contact-title { color: #c0392b; font-weight: 800; font-size: 14px; margin-bottom: 8px; }
+          .contact-line { color: #5a6478; font-size: 13px; line-height: 1.8; font-weight: 700; }
+          .contact-email { text-align: center; padding: 12px 18px 16px; border-top: 1.5px solid #d8dde8; color: #5a6478; font-weight: 700; }
+          .contact-email span { color: #2d4a8e; text-decoration: underline; }
         </style>
       </head>
       <body>
@@ -252,7 +316,7 @@ export default function App() {
             <InputField label="اسم العميل" value={clientName} onChange={setClientName} placeholder="الاسم الكامل" />
           </div>
           <div style={styles.grid2}>
-            <InputField label="الوزن (كجم)" value={weight} onChange={setWeight} type="number" placeholder="مثال: 23" />
+            <InputField label="الوزن (كجم)" value={weight} onChange={setWeight} type="string" placeholder="مثال: 23" />
           </div>
         </div>
 
@@ -271,10 +335,13 @@ export default function App() {
               <AirportSelect label="التواجد بمطار" value={leg.airport} onChange={v => updateLeg(idx, "airport", v)} />
               <InputField label="الصالة" value={leg.hall} onChange={v => updateLeg(idx, "hall", v)} placeholder="مثال: صالة 2" />
             </div>
+            <div style={styles.grid2}>
+              <InputField label="رقم الرحلة" value={leg.flightNumber} onChange={v => updateLeg(idx, "flightNumber", v)} placeholder="مثال: SV 301" />
+            </div>
             <div style={styles.grid3}>
               <InputField label="اليوم / التاريخ" value={leg.date} onChange={v => updateLeg(idx, "date", v)} type="date" />
-              <InputField label="ساعة الإقلاع" value={leg.departTime} onChange={v => updateLeg(idx, "departTime", v)} type="time" />
-              <InputField label="وصول الطائرة الساعة" value={leg.arrivalTime} onChange={v => updateLeg(idx, "arrivalTime", v)} type="time" />
+              <TimeField label="ساعة الإقلاع" value={leg.departTime} onChange={v => updateLeg(idx, "departTime", v)} />
+              <TimeField label="وصول الطائرة الساعة" value={leg.arrivalTime} onChange={v => updateLeg(idx, "arrivalTime", v)} />
             </div>
 
             {/* Transit for outbound */}
@@ -286,8 +353,8 @@ export default function App() {
                   <InputField label="مدة الترانزيت" value={leg.transit.duration} onChange={v => updateLegTransit(idx, "duration", v)} placeholder="مثال: 2 ساعة" />
                 </div>
                 <div style={styles.grid2}>
-                  <InputField label="وصول الترانزيت الساعة" value={leg.transit.arrivalTime} onChange={v => updateLegTransit(idx, "arrivalTime", v)} type="time" />
-                  <InputField label="إقلاع من الترانزيت الساعة" value={leg.transit.departTime} onChange={v => updateLegTransit(idx, "departTime", v)} type="time" />
+                  <TimeField label="وصول الترانزيت الساعة" value={leg.transit.arrivalTime} onChange={v => updateLegTransit(idx, "arrivalTime", v)} />
+                  <TimeField label="إقلاع من الترانزيت الساعة" value={leg.transit.departTime} onChange={v => updateLegTransit(idx, "departTime", v)} />
                 </div>
               </div>
             )}
@@ -320,10 +387,13 @@ export default function App() {
               <AirportSelect label="التواجد بمطار" value={returnData.airport} onChange={v => updateReturn("airport", v)} />
               <InputField label="الصالة" value={returnData.hall} onChange={v => updateReturn("hall", v)} placeholder="مثال: صالة 1" />
             </div>
+            <div style={styles.grid2}>
+              <InputField label="رقم الرحلة" value={returnData.flightNumber} onChange={v => updateReturn("flightNumber", v)} placeholder="مثال: SV 302" />
+            </div>
             <div style={styles.grid3}>
               <InputField label="اليوم / التاريخ" value={returnData.date} onChange={v => updateReturn("date", v)} type="date" />
-              <InputField label="ساعة الإقلاع" value={returnData.departTime} onChange={v => updateReturn("departTime", v)} type="time" />
-              <InputField label="وصول الطائرة الساعة" value={returnData.arrivalTime} onChange={v => updateReturn("arrivalTime", v)} type="time" />
+              <TimeField label="ساعة الإقلاع" value={returnData.departTime} onChange={v => updateReturn("departTime", v)} />
+              <TimeField label="وصول الطائرة الساعة" value={returnData.arrivalTime} onChange={v => updateReturn("arrivalTime", v)} />
             </div>
 
             {showReturnTransit && (
@@ -334,8 +404,8 @@ export default function App() {
                   <InputField label="مدة الترانزيت" value={returnData.transit.duration} onChange={v => updateReturnTransit("duration", v)} placeholder="مثال: 3 ساعات" />
                 </div>
                 <div style={styles.grid2}>
-                  <InputField label="وصول الترانزيت الساعة" value={returnData.transit.arrivalTime} onChange={v => updateReturnTransit("arrivalTime", v)} type="time" />
-                  <InputField label="إقلاع من الترانزيت الساعة" value={returnData.transit.departTime} onChange={v => updateReturnTransit("departTime", v)} type="time" />
+                  <TimeField label="وصول الترانزيت الساعة" value={returnData.transit.arrivalTime} onChange={v => updateReturnTransit("arrivalTime", v)} />
+                  <TimeField label="إقلاع من الترانزيت الساعة" value={returnData.transit.departTime} onChange={v => updateReturnTransit("departTime", v)} />
                 </div>
               </div>
             )}
@@ -370,17 +440,18 @@ export default function App() {
             {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
               <div key={idx} className="section" style={{ marginBottom: 20 }}>
                 <div className="section-title">
-                  <span className="icon">✈</span>
-                  {isMulti ? `رحلة ${idx + 1}` : "بيانات الذهاب"}
+                  <div className="section-title-main">
+                    <span className="icon">✈</span>
+                    {isMulti ? `رحلة ${idx + 1}` : "بيانات الذهاب"}
+                  </div>
+                  <div className="route-chip">خط السير: {buildRouteText(leg.fromCountry, leg.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell"><div className="cell-label">من</div><div className="cell-value">{leg.fromCountry || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">إلى</div><div className="cell-value">{leg.toCountry || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">المطار</div><div className="cell-value">{leg.airport || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">الصالة</div><div className="cell-value">{leg.hall || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
+                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{leg.flightNumber || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{leg.date || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{leg.departTime || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{leg.arrivalTime || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(leg.departTime)}</div></div>
+                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(leg.arrivalTime)}</div></div>
                 </div>
                 {(showOutTransit || isMulti) && leg.transit.place && (
                   <div className="transit-box">
@@ -388,8 +459,8 @@ export default function App() {
                     <div className="transit-grid">
                       <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{leg.transit.place}</div></div>
                       <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{leg.transit.duration}</div></div>
-                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{leg.transit.arrivalTime}</div></div>
-                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{leg.transit.departTime}</div></div>
+                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{formatArabicTime(leg.transit.arrivalTime)}</div></div>
+                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{formatArabicTime(leg.transit.departTime)}</div></div>
                     </div>
                   </div>
                 )}
@@ -399,17 +470,18 @@ export default function App() {
             {showReturn && (
               <div className="section">
                 <div className="section-title">
-                  <span className="icon">↩</span>
-                  بيانات العودة
+                  <div className="section-title-main">
+                    <span className="icon">↩</span>
+                    بيانات العودة
+                  </div>
+                  <div className="route-chip">خط السير: {buildRouteText(returnData.fromCountry, returnData.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell"><div className="cell-label">من</div><div className="cell-value">{returnData.fromCountry || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">إلى</div><div className="cell-value">{returnData.toCountry || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">المطار</div><div className="cell-value">{returnData.airport || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">الصالة</div><div className="cell-value">{returnData.hall || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
+                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{returnData.flightNumber || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{returnData.date || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{returnData.departTime || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{returnData.arrivalTime || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(returnData.departTime)}</div></div>
+                  <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(returnData.arrivalTime)}</div></div>
                 </div>
                 {showReturnTransit && returnData.transit.place && (
                   <div className="transit-box">
@@ -417,13 +489,28 @@ export default function App() {
                     <div className="transit-grid">
                       <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{returnData.transit.place}</div></div>
                       <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{returnData.transit.duration}</div></div>
-                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{returnData.transit.arrivalTime}</div></div>
-                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{returnData.transit.departTime}</div></div>
+                      <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{formatArabicTime(returnData.transit.arrivalTime)}</div></div>
+                      <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{formatArabicTime(returnData.transit.departTime)}</div></div>
                     </div>
                   </div>
                 )}
               </div>
             )}
+          </div>
+          <div className="contact-card">
+            <div className="contact-grid">
+              <div className="contact-block">
+                <div className="contact-title">العنوان :</div>
+                <div className="contact-line">دمياط الجديدة - المنطقة المركزية - مبنى رقم 152 - مقابل البنك الأهلي</div>
+                <div className="contact-line">رقم التليفون: 00201002131321 - 00201002030323</div>
+              </div>
+              <div className="contact-block" dir="ltr">
+                <div className="contact-title">Address :</div>
+                <div className="contact-line">Belding No.152, Central Zone, Front of Al - Ahly bank, New Damietta, Egypt</div>
+                <div className="contact-line">Tel. +2 0100 20 30 323  -  +2 0100 21 31 321</div>
+              </div>
+            </div>
+            <div className="contact-email"><span>E-Mail :</span> dm@royalvalleytours.com</div>
           </div>
           <div className="watermark">تم الإنشاء بواسطة Royal Valley Tours — PICK YOUR PASSION..</div>
           <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>
@@ -521,6 +608,12 @@ const styles = {
     background: "#fafbff", outline: "none",
     fontFamily: "inherit",
     transition: "border-color 0.2s",
+  },
+  timeHint: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#6b7a99",
+    fontWeight: 600,
   },
   transitBox: {
     background: "#fff8f0",
