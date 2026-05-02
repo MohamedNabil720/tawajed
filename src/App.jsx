@@ -157,7 +157,36 @@ const formatArabicTime = (time) => {
     return "—";
   }
 
-  return `${time} ${getArabicPeriod(time)}`.trim();
+  const [hourText, minuteText] = time.split(":");
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return "—";
+  }
+
+  const hour12 = hour % 12 || 12;
+  const minuteTextPadded = String(minute).padStart(2, "0");
+  return `${hour12}:${minuteTextPadded} ${getArabicPeriod(time)}`.trim();
+};
+
+const getAirportAttendanceTime = (time) => {
+  if (!time || !time.includes(":")) {
+    return "—";
+  }
+
+  const [hourText, minuteText] = time.split(":");
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return "—";
+  }
+
+  const totalMinutes = ((hour * 60 + minute) - 180 + 1440) % 1440;
+  const nextHour = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const nextMinute = String(totalMinutes % 60).padStart(2, "0");
+  return formatArabicTime(`${nextHour}:${nextMinute}`);
 };
 
 const buildRouteText = (from, to) => {
@@ -238,11 +267,13 @@ export default function App() {
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { font-family: 'Cairo', sans-serif; background: #f5f7fa; color: #1a2744; direction: rtl; }
           .page { max-width: 800px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
-          .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 28px 36px; display: flex; align-items: center; gap: 20px; }
+          .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 28px 36px; display: flex; align-items: center; gap: 20px; direction: ltr; justify-content: flex-start; }
           .logo-frame { width: 90px; height: 90px; background: white; border-radius: 12px; padding: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
           .header img { width: 100%; height: 100%; object-fit: contain; }
+          .header-text { text-align: left; }
           .header-text h1 { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; }
           .header-text p { color: #c8d8f8; font-size: 14px; margin-top: 4px; }
+          .header-note { color: #ffffff; font-size: 13px; margin-top: 8px; font-weight: 700; }
           .ticket-bar { background: #c0392b; padding: 10px 36px; display: flex; justify-content: space-between; align-items: center; }
           .ticket-bar span { color: white; font-size: 15px; font-weight: 700; }
           .content { padding: 28px 36px; }
@@ -254,8 +285,11 @@ export default function App() {
           .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
           .cell { padding: 12px 18px; border-bottom: 1px solid #eef1f8; }
           .cell:nth-child(3n+1), .cell:nth-child(3n+2) { border-left: 1px solid #eef1f8; }
+          .cell-full { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
+          .cell-full .cell-label { margin-bottom: 0; }
+          
           .cell-label { font-size: 11px; color: #7a8ab0; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .cell-value { font-size: 14px; color: #1a2744; font-weight: 600; }
+          .cell-value { font-size: 14px; color: #1a2744; font-weight: 600;   }
           .transit-box { margin: 0 18px 14px; padding: 14px; background: #fff8f0; border: 1.5px dashed #f0a500; border-radius: 10px; }
           .transit-title { font-size: 13px; font-weight: 700; color: #c07000; margin-bottom: 10px; }
           .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -267,10 +301,12 @@ export default function App() {
           .contact-grid { display: grid; grid-template-columns: 1fr 1fr; }
           .contact-block { padding: 14px 18px; min-height: 92px; }
           .contact-block + .contact-block { border-right: 1.5px solid #d8dde8; }
-          .contact-title { color: #c0392b; font-weight: 800; font-size: 14px; margin-bottom: 8px; }
-          .contact-line { color: #5a6478; font-size: 13px; line-height: 1.8; font-weight: 700; }
-          .contact-email { text-align: center; padding: 12px 18px 16px; border-top: 1.5px solid #d8dde8; color: #5a6478; font-weight: 700; }
+          .contact-title { color: #c0392b; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+          .contact-line { color: #5a6478; font-size: 11.5px; line-height: 1.8; font-weight: 700; }
+          .contact-email { text-align: center; padding: 10px 18px 14px; border-top: 1.5px solid #d8dde8; color: #5a6478; font-weight: 700; font-size: 12px; }
           .contact-email span { color: #2d4a8e; text-decoration: underline; }
+          .contact-message { text-align: center; padding: 14px 18px; color: #c0392b; font-weight: 700; font-size: 13px; }
+          
         </style>
       </head>
       <body>
@@ -434,7 +470,6 @@ export default function App() {
           <div className="ticket-bar">
             <span>🧳 {getTripTypeLabel(tripType)}</span>
             <span>👤 {clientName}</span>
-            <span>⚖ الوزن: {weight} كجم</span>
           </div>
           <div className="content">
             {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
@@ -448,10 +483,16 @@ export default function App() {
                 </div>
                 <div className="grid">
                   <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
-                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{leg.flightNumber || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{leg.date || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(leg.arrivalTime)}</div></div>
+                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{leg.flightNumber || "—"}</div></div>
+                  <div className="cell cell-full weight-row">
+                    <div className="cell-label">الوزن</div>
+                    <div className="cell-value">{weight ? `${weight} كجم` : "—"}</div>
+                  </div>
+
                 </div>
                 {(showOutTransit || isMulti) && leg.transit.place && (
                   <div className="transit-box">
@@ -478,10 +519,12 @@ export default function App() {
                 </div>
                 <div className="grid">
                   <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
-                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{returnData.flightNumber || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{returnData.date || "—"}</div></div>
+                  <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(returnData.arrivalTime)}</div></div>
+                  <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{returnData.flightNumber || "—"}</div></div>
+                  <div className="cell cell-full"><div className="cell-label">الوزن</div><div className="cell-value myValue">{weight ? `${weight} كجم` : "—"}</div></div>
                 </div>
                 {showReturnTransit && returnData.transit.place && (
                   <div className="transit-box">
@@ -511,6 +554,7 @@ export default function App() {
               </div>
             </div>
             <div className="contact-email"><span>E-Mail :</span> dm@royalvalleytours.com</div>
+            <div className="contact-message">مع أطيب التمنيات بقضاء رحلة سعيدة</div>
           </div>
           <div className="watermark">تم الإنشاء بواسطة Royal Valley Tours — PICK YOUR PASSION..</div>
           <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>
@@ -534,6 +578,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 20,
+    direction: "ltr",
+    justifyContent: "flex-start",
     boxShadow: "0 4px 20px rgba(26,39,68,0.3)",
   },
   logoFrame: {
@@ -556,10 +602,10 @@ const styles = {
   },
   companyName: {
     color: "white", fontSize: 26, fontWeight: 900,
-    letterSpacing: 2, lineHeight: 1.2,
+    letterSpacing: 2, lineHeight: 1.2, textAlign: "left",
   },
   tagline: {
-    color: "#a0b4d8", fontSize: 13, marginTop: 3, letterSpacing: 1,
+    color: "#a0b4d8", fontSize: 13, marginTop: 3, letterSpacing: 1, textAlign: "left",
   },
   formWrapper: {
     maxWidth: 860, margin: "28px auto", padding: "0 16px",
