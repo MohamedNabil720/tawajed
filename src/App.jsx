@@ -276,15 +276,15 @@ export default function App() {
           .header-note { color: #ffffff; font-size: 13px; margin-top: 8px; font-weight: 700; }
           .ticket-bar { background: #c0392b; padding: 10px 36px; display: flex; justify-content: space-between; align-items: center; }
           .ticket-bar span { color: white; font-size: 15px; font-weight: 700; }
+          .ticket-bar .ticket-label { color: #000; font-weight: 900; }
           .content { padding: 28px 36px; }
           .section { margin-bottom: 24px; border: 1.5px solid #e2e8f4; border-radius: 12px; overflow: hidden; }
           .section-title { background: #f0f4ff; padding: 10px 18px; font-size: 15px; font-weight: 700; color: #1a2744; border-bottom: 1.5px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
           .section-title-main { display: flex; align-items: center; gap: 8px; }
           .route-chip { font-size: 12px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 6px 12px; border-radius: 999px; }
           .section-title .icon { color: #c0392b; font-size: 18px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
-          .cell { padding: 12px 18px; border-bottom: 1px solid #eef1f8; }
-          .cell:nth-child(3n+1), .cell:nth-child(3n+2) { border-left: 1px solid #eef1f8; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #eef1f8; }
+          .cell { padding: 12px 18px; background: #fff; min-height: 78px; }
           .cell-full { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
           .cell-full .cell-label { margin-bottom: 0; }
           
@@ -306,7 +306,7 @@ export default function App() {
           .contact-email { text-align: center; padding: 10px 18px 14px; border-top: 1.5px solid #d8dde8; color: #5a6478; font-weight: 700; font-size: 12px; }
           .contact-email span { color: #2d4a8e; text-decoration: underline; }
           .contact-message { text-align: center; padding: 14px 18px; color: #c0392b; font-weight: 700; font-size: 13px; }
-          
+         
         </style>
       </head>
       <body>
@@ -468,8 +468,8 @@ export default function App() {
           </div>
           <div className="divider" />
           <div className="ticket-bar">
-            <span>🧳 {getTripTypeLabel(tripType)}</span>
-            <span>👤 {clientName}</span>
+            <span className="ticket-bar-title"><span className="ticket-label">نوع الرحلة :</span> {getTripTypeLabel(tripType)}</span>
+            <span className="ticket-bar-title"><span className="ticket-label">اسم العميل :</span> {clientName}</span>
           </div>
           <div className="content">
             {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
@@ -482,16 +482,13 @@ export default function App() {
                   <div className="route-chip">خط السير: {buildRouteText(leg.fromCountry, leg.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
+                  <div className="cell cell-full"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{leg.date || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(leg.arrivalTime)}</div></div>
                   <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{leg.flightNumber || "—"}</div></div>
-                  <div className="cell cell-full weight-row">
-                    <div className="cell-label">الوزن</div>
-                    <div className="cell-value">{weight ? `${weight} كجم` : "—"}</div>
-                  </div>
+                  <div className="cell"><div className="cell-label">الوزن</div><div className="cell-value">{weight ? `${weight} كجم` : "—"}</div></div>
 
                 </div>
                 {(showOutTransit || isMulti) && leg.transit.place && (
@@ -518,13 +515,13 @@ export default function App() {
                   <div className="route-chip">خط السير: {buildRouteText(returnData.fromCountry, returnData.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
+                  <div className="cell cell-full"><div className="cell-label">???????</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{returnData.date || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(returnData.arrivalTime)}</div></div>
                   <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{returnData.flightNumber || "—"}</div></div>
-                  <div className="cell cell-full"><div className="cell-label">الوزن</div><div className="cell-value myValue">{weight ? `${weight} كجم` : "—"}</div></div>
+                  <div className="cell"><div className="cell-label">الوزن</div><div className="cell-value myValue">{weight ? `${weight} كجم` : "—"}</div></div>
                 </div>
                 {showReturnTransit && returnData.transit.place && (
                   <div className="transit-box">
@@ -556,7 +553,7 @@ export default function App() {
             <div className="contact-email"><span>E-Mail :</span> dm@royalvalleytours.com</div>
             <div className="contact-message">مع أطيب التمنيات بقضاء رحلة سعيدة</div>
           </div>
-          <div className="watermark">تم الإنشاء بواسطة Royal Valley Tours — PICK YOUR PASSION..</div>
+
           <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>
         </div>
       </div>
