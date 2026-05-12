@@ -39,6 +39,19 @@ const tripTypes = [
   { value: "multi", label: "متعددة الرحلات" },
 ];
 
+const weightOptions = [
+  "10 كجم",
+  "15 كجم",
+  "20 كجم",
+  "23 كجم",
+  "25 كجم",
+  "30 كجم",
+  "32 كجم",
+  "35 كجم",
+  "40 كجم",
+  "46 كجم",
+];
+
 const hasTransitOut = (t) => ["one_way_transit", "transit_direct_return", "both_transit"].includes(t);
 const hasTransitReturn = (t) => ["direct_transit_return", "both_transit"].includes(t);
 const hasReturn = (t) => ["round_trip", "transit_direct_return", "direct_transit_return", "both_transit"].includes(t);
@@ -120,7 +133,7 @@ const AirportSelect = ({ label, value, onChange }) => {
   );
 };
 
-const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
+const InputField = ({ label, value, onChange, type = "text", placeholder, readOnly = false }) => (
   <div style={styles.field}>
     <label style={styles.label}>{label}</label>
     <input
@@ -128,6 +141,7 @@ const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
+      readOnly={readOnly}
       style={styles.input}
     />
   </div>
@@ -187,6 +201,34 @@ const getAirportAttendanceTime = (time) => {
   const nextHour = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
   const nextMinute = String(totalMinutes % 60).padStart(2, "0");
   return formatArabicTime(`${nextHour}:${nextMinute}`);
+};
+
+const getTransitDuration = (arrivalTime, departTime) => {
+  if (!arrivalTime || !departTime || !arrivalTime.includes(":") || !departTime.includes(":")) {
+    return "—";
+  }
+
+  const [arrivalHour, arrivalMinute] = arrivalTime.split(":").map(Number);
+  const [departHour, departMinute] = departTime.split(":").map(Number);
+
+  if (
+    Number.isNaN(arrivalHour) ||
+    Number.isNaN(arrivalMinute) ||
+    Number.isNaN(departHour) ||
+    Number.isNaN(departMinute)
+  ) {
+    return "—";
+  }
+
+  const arrivalTotal = arrivalHour * 60 + arrivalMinute;
+  const departTotal = departHour * 60 + departMinute;
+  const diff = (departTotal - arrivalTotal + 1440) % 1440;
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+
+  if (hours && minutes) return `${hours} ساعة و${minutes} دقيقة`;
+  if (hours) return `${hours} ساعة`;
+  return `${minutes} دقيقة`;
 };
 
 const buildRouteText = (from, to) => {
@@ -264,48 +306,48 @@ export default function App() {
         <title>تذكرة رحلة - Royal Valley Tours</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+          @page { size: A4 portrait; margin: 6mm; }
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: 'Cairo', sans-serif; background: #f5f7fa; color: #1a2744; direction: rtl; }
-          .page { max-width: 800px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
-          .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 28px 36px; display: flex; align-items: center; gap: 20px; direction: ltr; justify-content: flex-start; }
-          .logo-frame { width: 90px; height: 90px; background: white; border-radius: 12px; padding: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          html, body { width: 210mm; min-height: 297mm; overflow: hidden; }
+          body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; }
+          .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; }
+          .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 20px 24px; display: flex; align-items: center; gap: 16px; direction: ltr; justify-content: flex-start; }
+          .logo-frame { width: 72px; height: 72px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
           .header img { width: 100%; height: 100%; object-fit: contain; }
           .header-text { text-align: left; }
-          .header-text h1 { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; }
-          .header-text p { color: #c8d8f8; font-size: 14px; margin-top: 4px; }
-          .header-note { color: #ffffff; font-size: 13px; margin-top: 8px; font-weight: 700; }
-          .ticket-bar { background: #c0392b; padding: 10px 36px; display: flex; justify-content: space-between; align-items: center; }
-          .ticket-bar span { color: white; font-size: 15px; font-weight: 700; }
-          .ticket-bar .ticket-label { color: #000; font-weight: 900; }
-          .content { padding: 28px 36px; }
-          .section { margin-bottom: 24px; border: 1.5px solid #e2e8f4; border-radius: 12px; overflow: hidden; }
-          .section-title { background: #f0f4ff; padding: 10px 18px; font-size: 15px; font-weight: 700; color: #1a2744; border-bottom: 1.5px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+          .header-text h1 { color: white; font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+          .header-text p { color: #c8d8f8; font-size: 13px; margin-top: 3px; }
+          .header-note { color: #ffffff; font-size: 12px; margin-top: 6px; font-weight: 700; }
+          .ticket-bar { background: #c0392b; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; }
+          .ticket-bar span { color: white; font-size: 13px; font-weight: 700; }
+          .ticket-bar .ticket-label { color: #000;  }
+          .content { padding: 18px 24px 12px; }
+          .section { margin-bottom: 14px; border: 1px solid #e2e8f4; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+          .section-title { background: #f0f4ff; padding: 8px 14px; font-size: 14px; font-weight: 700; color: #1a2744; border-bottom: 1px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
           .section-title-main { display: flex; align-items: center; gap: 8px; }
-          .route-chip { font-size: 12px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 6px 12px; border-radius: 999px; }
-          .section-title .icon { color: #c0392b; font-size: 18px; }
+          .route-chip { font-size: 11px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 4px 10px; border-radius: 999px; }
+          .section-title .icon { color: #c0392b; font-size: 16px; }
           .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #eef1f8; }
-          .cell { padding: 12px 18px; background: #fff; min-height: 78px; }
-          .cell-full { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
-          .cell-full .cell-label { margin-bottom: 0; }
-          
-          .cell-label { font-size: 11px; color: #7a8ab0; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .cell-value { font-size: 14px; color: #1a2744; font-weight: 600;   }
-          .transit-box { margin: 0 18px 14px; padding: 14px; background: #fff8f0; border: 1.5px dashed #f0a500; border-radius: 10px; }
-          .transit-title { font-size: 13px; font-weight: 700; color: #c07000; margin-bottom: 10px; }
+          .cell { padding: 9px 12px; background: #fff; min-height: 62px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+          .cell-wide { grid-column: span 2; }
+          .cell-label { font-size: 10.5px; color: #7a8ab0; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
+          .cell-value { font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: left; }
+          .transit-box { margin: 0 12px 10px; padding: 10px; background: #fff8f0; border: 1px dashed #f0a500; border-radius: 9px; break-inside: avoid; text-align: center; }
+          .transit-title { font-size: 12px; font-weight: 700; color: #c07000; margin-bottom: 8px; }
           .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-          .transit-cell { }
-          .footer { background: #1a2744; padding: 14px 36px; text-align: center; color: #8ba3d8; font-size: 12px; }
+          .transit-cell { background: #fff; border-radius: 8px; padding: 8px 10px; min-height: 56px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; }
           .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
-          .watermark { text-align: center; padding: 10px; color: #d0d8ee; font-size: 11px; }
-          .contact-card { margin: 22px 0 8px; border: 1.5px solid #d8dde8; background: #fff; }
+          .watermark { text-align: center; padding: 6px; color: #d0d8ee; font-size: 10px; }
+          .contact-card { margin: 10px 0 0; border: 1px solid #d8dde8; background: #fff; break-inside: avoid; }
           .contact-grid { display: grid; grid-template-columns: 1fr 1fr; }
-          .contact-block { padding: 14px 18px; min-height: 92px; }
-          .contact-block + .contact-block { border-right: 1.5px solid #d8dde8; }
-          .contact-title { color: #c0392b; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
-          .contact-line { color: #5a6478; font-size: 11.5px; line-height: 1.8; font-weight: 700; }
-          .contact-email { text-align: center; padding: 10px 18px 14px; border-top: 1.5px solid #d8dde8; color: #5a6478; font-weight: 700; font-size: 12px; }
+          .contact-block { padding: 10px 14px; min-height: 70px; }
+          .contact-block + .contact-block { border-right: 1px solid #d8dde8; }
+          .contact-title { color: #c0392b; font-weight: 800; font-size: 11px; margin-bottom: 6px; }
+          .contact-line { color: #5a6478; font-size: 9.8px; line-height: 1.65; font-weight: 700; }
+          .contact-email { text-align: center; padding: 7px 14px 9px; border-top: 1px solid #d8dde8; color: #5a6478; font-weight: 700; font-size: 10px; }
           .contact-email span { color: #2d4a8e; text-decoration: underline; }
-          .contact-message { text-align: center; padding: 14px 18px; color: #c0392b; font-weight: 700; font-size: 13px; }
+          .contact-message { text-align: center; padding: 8px 14px; color: #c0392b; font-weight: 700; font-size: 11px; }
          
         </style>
       </head>
@@ -316,7 +358,20 @@ export default function App() {
     `);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 600);
+    setTimeout(() => {
+      const page = win.document.querySelector(".page");
+      if (page) {
+        const pageHeight = 1123;
+        const pageWidth = 794;
+        const scale = Math.min(
+          (pageWidth - 24) / page.scrollWidth,
+          (pageHeight - 24) / page.scrollHeight,
+          1
+        );
+        page.style.zoom = `${scale}`;
+      }
+      win.print();
+    }, 600);
   };
 
   const mainLeg = legs[0];
@@ -352,7 +407,7 @@ export default function App() {
             <InputField label="اسم العميل" value={clientName} onChange={setClientName} placeholder="الاسم الكامل" />
           </div>
           <div style={styles.grid2}>
-            <InputField label="الوزن (كجم)" value={weight} onChange={setWeight} type="string" placeholder="مثال: 23" />
+            <SelectField label="الوزن" value={weight} onChange={setWeight} options={weightOptions} placeholder="-- اختر الوزن --" />
           </div>
         </div>
 
@@ -386,7 +441,7 @@ export default function App() {
                 <div style={styles.transitTitle}>✈ بيانات الترانزيت</div>
                 <div style={styles.grid2}>
                   <InputField label="مكان الترانزيت" value={leg.transit.place} onChange={v => updateLegTransit(idx, "place", v)} placeholder="مثال: دبي" />
-                  <InputField label="مدة الترانزيت" value={leg.transit.duration} onChange={v => updateLegTransit(idx, "duration", v)} placeholder="مثال: 2 ساعة" />
+                  <InputField label="مدة الترانزيت" value={getTransitDuration(leg.transit.arrivalTime, leg.transit.departTime)} onChange={() => {}} readOnly />
                 </div>
                 <div style={styles.grid2}>
                   <TimeField label="وصول الترانزيت الساعة" value={leg.transit.arrivalTime} onChange={v => updateLegTransit(idx, "arrivalTime", v)} />
@@ -437,7 +492,7 @@ export default function App() {
                 <div style={styles.transitTitle}>✈ بيانات ترانزيت العودة</div>
                 <div style={styles.grid2}>
                   <InputField label="مكان الترانزيت" value={returnData.transit.place} onChange={v => updateReturnTransit("place", v)} placeholder="مثال: القاهرة" />
-                  <InputField label="مدة الترانزيت" value={returnData.transit.duration} onChange={v => updateReturnTransit("duration", v)} placeholder="مثال: 3 ساعات" />
+                  <InputField label="مدة الترانزيت" value={getTransitDuration(returnData.transit.arrivalTime, returnData.transit.departTime)} onChange={() => {}} readOnly />
                 </div>
                 <div style={styles.grid2}>
                   <TimeField label="وصول الترانزيت الساعة" value={returnData.transit.arrivalTime} onChange={v => updateReturnTransit("arrivalTime", v)} />
@@ -482,13 +537,13 @@ export default function App() {
                   <div className="route-chip">خط السير: {buildRouteText(leg.fromCountry, leg.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell cell-full"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
+                  <div className="cell cell-wide"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(leg.airport, leg.hall)}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{leg.date || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(leg.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(leg.arrivalTime)}</div></div>
+                  <div className="cell cell-wide"><div className="cell-label">الوزن</div><div className="cell-value">{weight || "—"}</div></div>
                   <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{leg.flightNumber || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">الوزن</div><div className="cell-value">{weight ? `${weight} كجم` : "—"}</div></div>
 
                 </div>
                 {(showOutTransit || isMulti) && leg.transit.place && (
@@ -496,7 +551,7 @@ export default function App() {
                     <div className="transit-title">🔄 بيانات الترانزيت</div>
                     <div className="transit-grid">
                       <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{leg.transit.place}</div></div>
-                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{leg.transit.duration}</div></div>
+                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{getTransitDuration(leg.transit.arrivalTime, leg.transit.departTime)}</div></div>
                       <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{formatArabicTime(leg.transit.arrivalTime)}</div></div>
                       <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{formatArabicTime(leg.transit.departTime)}</div></div>
                     </div>
@@ -515,20 +570,20 @@ export default function App() {
                   <div className="route-chip">خط السير: {buildRouteText(returnData.fromCountry, returnData.toCountry)}</div>
                 </div>
                 <div className="grid">
-                  <div className="cell cell-full"><div className="cell-label">???????</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
+                  <div className="cell cell-wide"><div className="cell-label">التواجد</div><div className="cell-value">{buildAttendanceText(returnData.airport, returnData.hall)}</div></div>
                   <div className="cell"><div className="cell-label">التاريخ</div><div className="cell-value">{returnData.date || "—"}</div></div>
                   <div className="cell"><div className="cell-label">التواجد في المطار الساعة</div><div className="cell-value">{getAirportAttendanceTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">ساعة الإقلاع</div><div className="cell-value">{formatArabicTime(returnData.departTime)}</div></div>
                   <div className="cell"><div className="cell-label">وصول الطائرة</div><div className="cell-value">{formatArabicTime(returnData.arrivalTime)}</div></div>
+                  <div className="cell cell-wide"><div className="cell-label">الوزن</div><div className="cell-value myValue">{weight || "—"}</div></div>
                   <div className="cell"><div className="cell-label">رقم الرحلة</div><div className="cell-value">{returnData.flightNumber || "—"}</div></div>
-                  <div className="cell"><div className="cell-label">الوزن</div><div className="cell-value myValue">{weight ? `${weight} كجم` : "—"}</div></div>
                 </div>
                 {showReturnTransit && returnData.transit.place && (
                   <div className="transit-box">
                     <div className="transit-title">🔄 بيانات ترانزيت العودة</div>
                     <div className="transit-grid">
                       <div className="transit-cell"><div className="cell-label">مكان الترانزيت</div><div className="cell-value">{returnData.transit.place}</div></div>
-                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{returnData.transit.duration}</div></div>
+                      <div className="transit-cell"><div className="cell-label">مدة الترانزيت</div><div className="cell-value">{getTransitDuration(returnData.transit.arrivalTime, returnData.transit.departTime)}</div></div>
                       <div className="transit-cell"><div className="cell-label">وصول الترانزيت</div><div className="cell-value">{formatArabicTime(returnData.transit.arrivalTime)}</div></div>
                       <div className="transit-cell"><div className="cell-label">إقلاع من الترانزيت</div><div className="cell-value">{formatArabicTime(returnData.transit.departTime)}</div></div>
                     </div>
