@@ -40,16 +40,20 @@ const tripTypes = [
 ];
 
 const weightOptions = [
-  "10 كجم",
-  "15 كجم",
-  "20 كجم",
-  "23 كجم",
-  "25 كجم",
-  "30 كجم",
-  "32 كجم",
-  "35 كجم",
-  "40 كجم",
-  "46 كجم",
+  "بدون وزن - 7 ك هاندباج فقط",
+  "10 ك + 7 هاندباج",
+  "15 ك + 7 هاندباج",
+  "20 ك + 7 هاندباج",
+  "23 ك + 7 هاندباج",
+  "قطعة واحدة 23 ك + 7 هاندباج",
+  "قطعة واحدة 30 ك + 7 هاندباج",
+  "قطعتين 30 ك + 7 هاندباج",
+  "40 ك + 7 هاندباج",
+  "23 ك + 23 ك + 7 هاندباج",
+  "23 ك + 23 ك + 23 ك + 7 هاندباج",
+  "46 كيلو مقسمة على قطعتين + 7 هاندباج",
+  "32 ك + 7 هاندباج",
+  "32 ك + 32 ك + 7 هاندباج",
 ];
 
 const hasTransitOut = (t) => ["one_way_transit", "transit_direct_return", "both_transit"].includes(t);
@@ -240,9 +244,9 @@ const buildRouteText = (from, to) => {
 
 const buildAttendanceText = (airport, hall) => {
   if (!airport && !hall) return "—";
-  if (airport && hall) return `بمطار ${airport} - ${hall}`;
+  if (airport && hall) return `بمطار ${airport} - صالة ${hall}`;
   if (airport) return `بمطار ${airport}`;
-  return hall;
+  return `صالة ${hall}`;
 };
 
 const TimeField = ({ label, value, onChange }) => (
@@ -308,9 +312,9 @@ export default function App() {
           @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
           @page { size: A4 portrait; margin: 6mm; }
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          html, body { width: 210mm; min-height: 297mm; overflow: hidden; }
-          body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; }
-          .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; }
+          html, body { width: 100%; min-height: 100%; overflow: hidden; }
+          body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; display: flex; justify-content: center; align-items: flex-start; }
+          .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; border: 1px solid #dbe3f2; border-radius: 18px; }
           .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 20px 24px; display: flex; align-items: center; gap: 16px; direction: ltr; justify-content: flex-start; }
           .logo-frame { width: 72px; height: 72px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
           .header img { width: 100%; height: 100%; object-fit: contain; }
@@ -321,8 +325,8 @@ export default function App() {
           .ticket-bar { background: #c0392b; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; }
           .ticket-bar span { color: white; font-size: 13px; font-weight: 700; }
           .ticket-bar .ticket-label { color: #000;  }
-          .content { padding: 18px 24px 12px; }
-          .section { margin-bottom: 14px; border: 1px solid #e2e8f4; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+          .content { padding: 0; }
+          .section { margin-bottom: 0; border: 0; border-top: 1px solid #e2e8f4; border-radius: 0; overflow: hidden; break-inside: avoid; }
           .section-title { background: #f0f4ff; padding: 8px 14px; font-size: 14px; font-weight: 700; color: #1a2744; border-bottom: 1px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
           .section-title-main { display: flex; align-items: center; gap: 8px; }
           .route-chip { font-size: 11px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 4px 10px; border-radius: 999px; }
@@ -331,15 +335,15 @@ export default function App() {
           .cell { padding: 9px 12px; background: #fff; min-height: 62px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
           .cell-wide { grid-column: span 2; }
           .cell-label { font-size: 10.5px; color: #7a8ab0; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
-          .cell-value { font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: left; }
-          .transit-box { margin: 0 12px 10px; padding: 10px; background: #fff8f0; border: 1px dashed #f0a500; border-radius: 9px; break-inside: avoid; text-align: center; }
+          .cell-value { flex: 1; font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: center; }
+          .transit-box { margin: 0; padding: 10px 14px; background: #fff8f0; border-top: 1px dashed #f0a500; border-radius: 0; break-inside: avoid; text-align: center; }
           .transit-title { font-size: 12px; font-weight: 700; color: #c07000; margin-bottom: 8px; }
           .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
           .transit-cell { background: #fff; border-radius: 8px; padding: 8px 10px; min-height: 56px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; }
+          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.08); }
           .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
           .watermark { text-align: center; padding: 6px; color: #d0d8ee; font-size: 10px; }
-          .contact-card { margin: 10px 0 0; border: 1px solid #d8dde8; background: #fff; break-inside: avoid; }
+          .contact-card { margin: 0; border: 0; border-top: 1px solid #d8dde8; background: #fff; break-inside: avoid; }
           .contact-grid { display: grid; grid-template-columns: 1fr 1fr; }
           .contact-block { padding: 10px 14px; min-height: 70px; }
           .contact-block + .contact-block { border-right: 1px solid #d8dde8; }
@@ -424,7 +428,7 @@ export default function App() {
             </div>
             <div style={styles.grid2}>
               <AirportSelect label="التواجد بمطار" value={leg.airport} onChange={v => updateLeg(idx, "airport", v)} />
-              <InputField label="الصالة" value={leg.hall} onChange={v => updateLeg(idx, "hall", v)} placeholder="مثال: صالة 2" />
+              <InputField label="رقم الصالة" value={leg.hall} onChange={v => updateLeg(idx, "hall", v)} placeholder="مثال: 2" />
             </div>
             <div style={styles.grid2}>
               <InputField label="رقم الرحلة" value={leg.flightNumber} onChange={v => updateLeg(idx, "flightNumber", v)} placeholder="مثال: SV 301" />
@@ -476,7 +480,7 @@ export default function App() {
             </div>
             <div style={styles.grid2}>
               <AirportSelect label="التواجد بمطار" value={returnData.airport} onChange={v => updateReturn("airport", v)} />
-              <InputField label="الصالة" value={returnData.hall} onChange={v => updateReturn("hall", v)} placeholder="مثال: صالة 1" />
+              <InputField label="رقم الصالة" value={returnData.hall} onChange={v => updateReturn("hall", v)} placeholder="مثال: 1" />
             </div>
             <div style={styles.grid2}>
               <InputField label="رقم الرحلة" value={returnData.flightNumber} onChange={v => updateReturn("flightNumber", v)} placeholder="مثال: SV 302" />
