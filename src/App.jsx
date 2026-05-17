@@ -313,10 +313,10 @@ export default function App() {
           @page { size: A4 portrait; margin: 6mm; }
           * { box-sizing: border-box; margin: 0; padding: 0; }
           html, body { width: 100%; min-height: 100%; overflow: hidden; }
-          body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; display: flex; justify-content: center; align-items: flex-start; }
-          .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; border: 1px solid #dbe3f2; border-radius: 18px; }
+          body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; display: flex; justify-content: center; align-items: flex-start; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; border: 1px solid #dbe3f2; border-radius: 18px; display: flex; flex-direction: column; }
           .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 20px 24px; display: flex; align-items: center; gap: 16px; direction: ltr; justify-content: flex-start; }
-          .logo-frame { width: 72px; height: 72px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          .logo-frame { width: 86px; height: 86px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
           .header img { width: 100%; height: 100%; object-fit: contain; }
           .header-text { text-align: left; }
           .header-text h1 { color: white; font-size: 24px; font-weight: 900; letter-spacing: 1px; }
@@ -325,26 +325,27 @@ export default function App() {
           .ticket-bar { background: #c0392b; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; }
           .ticket-bar span { color: white; font-size: 13px; font-weight: 700; }
           .ticket-bar .ticket-label { color: #000;  }
-          .content { padding: 0; }
-          .section { margin-bottom: 0; border: 0; border-top: 1px solid #e2e8f4; border-radius: 0; overflow: hidden; break-inside: avoid; }
-          .section-title { background: #f0f4ff; padding: 8px 14px; font-size: 14px; font-weight: 700; color: #1a2744; border-bottom: 1px solid #e2e8f4; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+          .ticket-bar .ticket-value { color: #2d4a8e; }
+          .content { padding: 0; flex: 1; display: flex; flex-direction: column; }
+          .section { margin-bottom: 0; border: 0; border-top: 1.25px solid #ccd7ee; border-radius: 0; overflow: hidden; break-inside: avoid; }
+          .section-title { background: #f0f4ff; padding: 8px 14px; font-size: 14px; font-weight: 700; color: #1a2744; border-bottom: 1.25px solid #ccd7ee; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
           .section-title-main { display: flex; align-items: center; gap: 8px; }
           .route-chip { font-size: 11px; font-weight: 700; color: #2d4a8e; background: #e8eefc; padding: 4px 10px; border-radius: 999px; }
           .section-title .icon { color: #c0392b; font-size: 16px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #eef1f8; }
-          .cell { padding: 9px 12px; background: #fff; min-height: 62px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: #fff; border-top: 1.25px solid #c7d2ea; border-right: 1.25px solid #c7d2ea; border-left: 1.25px solid #c7d2ea; border-bottom: 1.25px solid #c7d2ea; }
+          .cell { padding: 9px 12px; background: #fff; min-height: 62px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; border-left: 1.25px solid #c7d2ea; border-bottom: 1.25px solid #c7d2ea; }
           .cell-wide { grid-column: span 2; }
           .cell-label { font-size: 10.5px; color: #7a8ab0; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
-          .cell-value { flex: 1; font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: center; }
-          .transit-box { margin: 0; padding: 10px 14px; background: #fff8f0; border-top: 1px dashed #f0a500; border-radius: 0; break-inside: avoid; text-align: center; }
+          .cell-value { font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: right; }
+          .transit-box { margin: 0; padding: 10px 14px; background: #fff8f0; border-top: 1.25px dashed #f0a500; border-radius: 0; break-inside: avoid; text-align: center; }
           .transit-title { font-size: 12px; font-weight: 700; color: #c07000; margin-bottom: 8px; }
-          .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-          .transit-cell { background: #fff; border-radius: 8px; padding: 8px 10px; min-height: 56px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.08); }
+          .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1.25px solid #f0c98a; border-right: 1.25px solid #f0c98a; border-left: 1.25px solid #f0c98a; border-bottom: 1.25px solid #f0c98a; }
+          .transit-cell { background: #fff; border-radius: 0; padding: 8px 10px; min-height: 56px; display: flex; justify-content: flex-start; align-items: center; gap: 10px; border-left: 1.25px solid #f0c98a; border-bottom: 1.25px solid #f0c98a; }
+          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: auto; }
           .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
           .watermark { text-align: center; padding: 6px; color: #d0d8ee; font-size: 10px; }
           .contact-card { margin: 0; border: 0; border-top: 1px solid #d8dde8; background: #fff; break-inside: avoid; }
-          .contact-grid { display: grid; grid-template-columns: 1fr 1fr; }
+          .contact-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #d8dde8; }
           .contact-block { padding: 10px 14px; min-height: 70px; }
           .contact-block + .contact-block { border-right: 1px solid #d8dde8; }
           .contact-title { color: #c0392b; font-weight: 800; font-size: 11px; margin-bottom: 6px; }
@@ -527,8 +528,8 @@ export default function App() {
           </div>
           <div className="divider" />
           <div className="ticket-bar">
-            <span className="ticket-bar-title"><span className="ticket-label">نوع الرحلة :</span> {getTripTypeLabel(tripType)}</span>
-            <span className="ticket-bar-title"><span className="ticket-label">اسم العميل :</span> {clientName}</span>
+            <span className="ticket-bar-title"><span className="ticket-label">نوع الرحلة :</span> <span className="ticket-value">{getTripTypeLabel(tripType)}</span></span>
+            <span className="ticket-bar-title"><span className="ticket-label">اسم العميل :</span> <span className="ticket-value">{clientName}</span></span>
           </div>
           <div className="content">
             {(isMulti ? legs : [legs[0]]).map((leg, idx) => (
