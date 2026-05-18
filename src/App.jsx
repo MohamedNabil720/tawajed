@@ -316,15 +316,15 @@ export default function App() {
           body { font-family: 'Cairo', sans-serif; background: white; color: #1a2744; direction: rtl; display: flex; justify-content: center; align-items: flex-start; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .page { width: 198mm; min-height: 283mm; margin: 0 auto; background: white; overflow: hidden; border: 1px solid #dbe3f2; border-radius: 18px; display: flex; flex-direction: column; }
           .header { background: linear-gradient(135deg, #1a2744 0%, #2d4a8e 100%); padding: 20px 24px; display: flex; align-items: center; gap: 16px; direction: ltr; justify-content: flex-start; }
-          .logo-frame { width: 86px; height: 86px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          .logo-frame { width: 102px; height: 102px; background: white; border-radius: 10px; padding: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
           .header img { width: 100%; height: 100%; object-fit: contain; }
           .header-text { text-align: left; }
           .header-text h1 { color: white; font-size: 24px; font-weight: 900; letter-spacing: 1px; }
           .header-text p { color: #c8d8f8; font-size: 13px; margin-top: 3px; }
           .header-note { color: #ffffff; font-size: 12px; margin-top: 6px; font-weight: 700; }
-          .ticket-bar { background: #c0392b; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; }
-          .ticket-bar span { color: white; font-size: 13px; font-weight: 700; }
-          .ticket-bar .ticket-label { color: #000;  }
+          .ticket-bar { background: #eef1f8; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1.25px solid #d9e0ef; }
+          .ticket-bar span { color: #1a2744; font-size: 13px; font-weight: 700; }
+          .ticket-bar .ticket-label { color: #c0392b;  }
           .ticket-bar .ticket-value { color: #2d4a8e; }
           .content { padding: 0; flex: 1; display: flex; flex-direction: column; }
           .section { margin-bottom: 0; border: 0; border-top: 1.25px solid #ccd7ee; border-radius: 0; overflow: hidden; break-inside: avoid; }
@@ -335,13 +335,13 @@ export default function App() {
           .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: #fff; border-top: 1.25px solid #c7d2ea; border-right: 1.25px solid #c7d2ea; border-left: 1.25px solid #c7d2ea; border-bottom: 1.25px solid #c7d2ea; }
           .cell { padding: 9px 12px; background: #fff; min-height: 62px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; border-left: 1.25px solid #c7d2ea; border-bottom: 1.25px solid #c7d2ea; }
           .cell-wide { grid-column: span 2; }
-          .cell-label { font-size: 10.5px; color: #7a8ab0; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
+          .cell-label { font-size: 13px; color: #c0392b; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; }
           .cell-value { font-size: 13px; color: #1a2744; font-weight: 700; line-height: 1.45; text-align: right; }
           .transit-box { margin: 0; padding: 10px 14px; background: #fff8f0; border-top: 1.25px dashed #f0a500; border-radius: 0; break-inside: avoid; text-align: center; }
           .transit-title { font-size: 12px; font-weight: 700; color: #c07000; margin-bottom: 8px; }
           .transit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1.25px solid #f0c98a; border-right: 1.25px solid #f0c98a; border-left: 1.25px solid #f0c98a; border-bottom: 1.25px solid #f0c98a; }
           .transit-cell { background: #fff; border-radius: 0; padding: 8px 10px; min-height: 56px; display: flex; justify-content: flex-start; align-items: center; gap: 10px; border-left: 1.25px solid #f0c98a; border-bottom: 1.25px solid #f0c98a; }
-          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #8ba3d8; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: auto; }
+          .footer { background: #1a2744; padding: 10px 24px; text-align: center; color: #fff; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: auto; }
           .divider { height: 3px; background: linear-gradient(90deg, #c0392b, #f0a500, #c0392b); margin: 0; }
           .watermark { text-align: center; padding: 6px; color: #d0d8ee; font-size: 10px; }
           .contact-card { margin: 0; border: 0; border-top: 1px solid #d8dde8; background: #fff; break-inside: avoid; }
@@ -446,7 +446,7 @@ export default function App() {
                 <div style={styles.transitTitle}>✈ بيانات الترانزيت</div>
                 <div style={styles.grid2}>
                   <InputField label="مكان الترانزيت" value={leg.transit.place} onChange={v => updateLegTransit(idx, "place", v)} placeholder="مثال: دبي" />
-                  <InputField label="مدة الترانزيت" value={getTransitDuration(leg.transit.arrivalTime, leg.transit.departTime)} onChange={() => {}} readOnly />
+                  <InputField label="مدة الترانزيت" value={getTransitDuration(leg.transit.arrivalTime, leg.transit.departTime)} onChange={() => { }} readOnly />
                 </div>
                 <div style={styles.grid2}>
                   <TimeField label="وصول الترانزيت الساعة" value={leg.transit.arrivalTime} onChange={v => updateLegTransit(idx, "arrivalTime", v)} />
@@ -497,7 +497,7 @@ export default function App() {
                 <div style={styles.transitTitle}>✈ بيانات ترانزيت العودة</div>
                 <div style={styles.grid2}>
                   <InputField label="مكان الترانزيت" value={returnData.transit.place} onChange={v => updateReturnTransit("place", v)} placeholder="مثال: القاهرة" />
-                  <InputField label="مدة الترانزيت" value={getTransitDuration(returnData.transit.arrivalTime, returnData.transit.departTime)} onChange={() => {}} readOnly />
+                  <InputField label="مدة الترانزيت" value={getTransitDuration(returnData.transit.arrivalTime, returnData.transit.departTime)} onChange={() => { }} readOnly />
                 </div>
                 <div style={styles.grid2}>
                   <TimeField label="وصول الترانزيت الساعة" value={returnData.transit.arrivalTime} onChange={v => updateReturnTransit("arrivalTime", v)} />
@@ -612,9 +612,9 @@ export default function App() {
             </div>
             <div className="contact-email"><span>E-Mail :</span> dm@royalvalleytours.com</div>
             <div className="contact-message">مع أطيب التمنيات بقضاء رحلة سعيدة</div>
-          </div>
+          </div>+2 0100 20 30 323
 
-          <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>
+          <div className="footer">جميع الحقوق محفوظة © Royal Valley Tours</div>+2 0100 20 30 323
         </div>
       </div>
     </div>
